@@ -1,0 +1,14 @@
+:root { --bg:#0f172a; --fg:#e2e8f0; --accent:#22c55e; --soft:#334155; }
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+
+.container { max-width: 980px; margin: 0 auto; padding: 0 16px; }
+
+.app-shell { max-width: 980px; margin: 24px auto; padding: 0 16px; width: 100%; }
+main.full-width .app-shell { max-width: none; margin: 16px 0 0; padding: 0 16px; }
+
+@media (min-width: 1200px) {
+  main.full-width .app-shell { padding: 0 48px; }
+}
+
+.nav-link.active { color: #fff !important; font-weight: 600; }

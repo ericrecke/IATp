@@ -1,0 +1,78 @@
+<section class="heuristic-page">
+  <div class="heuristic-grid">
+    <article class="card shadow-sm h-100 form-card">
+      <div class="card-header bg-success text-white">
+        <strong>Punto 2 - Busqueda heuristica (A*)</strong>
+      </div>
+      <div class="card-body">
+        <form (ngSubmit)="run()" #f="ngForm" class="row g-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label">x inicial (mm)</label>
+            <input type="number" class="form-control" [(ngModel)]="start" name="start" required>
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label">Delta (mm)</label>
+            <input type="number" class="form-control" [(ngModel)]="step" name="step" step="0.1" required>
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label">Tolerancia (mm)</label>
+            <input type="number" class="form-control" [(ngModel)]="tol" name="tol" step="0.1" required>
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label">Costo por mm</label>
+            <input type="number" class="form-control" [(ngModel)]="costPerMm" name="costPerMm" step="0.1" required>
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label">Limite inferior (mm)</label>
+            <input type="number" class="form-control" [(ngModel)]="minX" name="minX" required>
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label">Limite superior (mm)</label>
+            <input type="number" class="form-control" [(ngModel)]="maxX" name="maxX" required>
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label">Maximo de expansiones</label>
+            <input type="number" class="form-control" [(ngModel)]="maxExpansions" name="maxExpansions" required>
+          </div>
+
+          <div class="col-12">
+            <div class="form-actions">
+              <button type="submit" class="btn btn-success">Ejecutar</button>
+              <button type="button" class="btn btn-outline-secondary" (click)="reset()">Limpiar</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </article>
+
+    <article class="card shadow-sm h-100 result-card">
+      <div class="card-header bg-light">
+        <strong>Resultado</strong>
+      </div>
+      <div class="card-body">
+        <ng-container *ngIf="result; else noResult">
+          <p class="mb-3">
+            Exito:
+            <span class="badge" [class.text-bg-success]="result.success" [class.text-bg-danger]="!result.success">
+              {{ result.success ? 'Si' : 'No' }}
+            </span>
+            <span class="ms-3">Nodos expandidos: <b>{{ result.expansions }}</b></span>
+            <span class="ms-3">Costo total: <b>{{ result.cost | number:'1.0-2' }}</b></span>
+          </p>
+
+          <div *ngIf="result.success" class="result-content">
+            <h6 class="result-title">Camino (x en mm)</h6>
+            <div class="result-path">
+              <code>{{ result.path.join(' -> ') }}</code>
+            </div>
+            <p class="mt-3 mb-0">Pasos: <b>{{ result.path.length - 1 }}</b></p>
+          </div>
+        </ng-container>
+
+        <ng-template #noResult>
+          <p class="text-muted mb-0">Ejecuta A* para ver resultados.</p>
+        </ng-template>
+      </div>
+    </article>
+  </div>
+</section>

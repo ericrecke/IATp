@@ -1,0 +1,56 @@
+:host {
+  display: block;
+}
+
+.heuristic-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.heuristic-grid {
+  display: grid;
+  gap: 24px;
+}
+
+@media (min-width: 992px) {
+  .heuristic-grid {
+    grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);
+  }
+}
+
+@media (min-width: 1400px) {
+  .heuristic-grid {
+    grid-template-columns: minmax(360px, 480px) minmax(0, 1fr);
+  }
+}
+
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.result-card .card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.result-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.result-path {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px;
+  overflow-x: auto;
+}
+
+.result-path code {
+  white-space: nowrap;
+}
