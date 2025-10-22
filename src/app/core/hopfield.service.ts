@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 
+//Tipo PlusMinusOne
 export type PM1 = -1 | 1;
 
 @Injectable({ providedIn: 'root' })
@@ -35,6 +36,25 @@ export class HopfieldService {
       s = next;
     }
     return s;
+  }
+
+  /** Devuelve la trayectoria: estados y energías por iteración */
+  recallWithTrace(input: PM1[], iterations = 10): { states: PM1[][]; energies: number[] } {
+    const states: PM1[][] = [input.slice() as PM1[]];
+    const energies: number[] = [this.energy(input)];
+    let s = input.slice() as PM1[];
+    for (let t = 0; t < iterations; t++) {
+      const next = s.slice() as PM1[];
+      for (let i = 0; i < this.N; i++) {
+        let h = 0;
+        for (let j = 0; j < this.N; j++) h += this.W[i][j] * s[j];
+        next[i] = (h >= 0 ? 1 : -1) as PM1;
+      }
+      s = next;
+      states.push(s.slice() as PM1[]);
+      energies.push(this.energy(s));
+    }
+    return { states, energies };
   }
 
   /** Energía del estado */

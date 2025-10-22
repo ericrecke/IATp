@@ -96,6 +96,58 @@
             </div>
         </div>
 
+        <div *ngIf="traceRows?.length" class="card mt-3 shadow-sm">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <strong>Energía por iteración</strong>
+                <span class="badge rounded-pill text-bg-{{ improvementPct>0 ? 'success' : 'secondary' }}">
+                    ↓ {{ improvementPct | number:'1.0-0' }}%
+                </span>
+            </div>
+
+            <div class="card-body">
+                <!-- Barra de progreso (mejora global) -->
+                <div class="mb-3">
+                    <div class="progress" role="progressbar" aria-label="Reducción de energía">
+                        <div class="progress-bar bg-success" [style.width.%]="improvementPct"></div>
+                    </div>
+                    <div class="small text-muted mt-1">
+                        Inicial: <b>{{ energyBefore | number:'1.2-2' }}</b> · Final: <b>{{ energyAfter | number:'1.2-2'
+                            }}</b>
+                    </div>
+                </div>
+
+                <!-- Tabla de iteraciones -->
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 90px;">Iteración</th>
+                                <th>Energía E</th>
+                                <th style="width: 120px;">E</th>
+                            </tr>
+                        </thead>
+                        <tbody class="font-mono">
+                            <tr *ngFor="let r of traceRows">
+                                <td><span class="badge text-bg-secondary">iteración {{ r.it }}</span></td>
+                                <td>{{ r.E | number:'1.2-2' }}</td>
+                                <td>
+                                    <span class="badge" [ngClass]="{
+                      'text-bg-success': r.dE < 0,
+                      'text-bg-danger' : r.dE > 0,
+                      'text-bg-secondary': r.dE === 0
+                    }">
+                                        {{ r.dE | number:'1.2-2' }}
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+
+
         <!-- Aviso (alert) -->
         <div *ngIf="notice" class="alert alert-{{ notice.type }} alert-dismissible fade show" role="alert">
             {{ notice.text }}

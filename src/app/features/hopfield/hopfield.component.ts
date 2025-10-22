@@ -16,6 +16,10 @@ export class HopfieldComponent implements OnInit {
   noisy: number[] = [];
   output: number[] = [];
 
+  traceEnergies: number[] = [];
+  traceRows: Array<{ it: number; E: number; dE: number }> = [];
+  improvementPct = 0; // % de reducción de energía (0..100)
+
   noise = 0.15;
   iterations = 8;
   energyBefore?: number;
@@ -87,22 +91,33 @@ export class HopfieldComponent implements OnInit {
 
   //Metodo para reconocer el patron con ruido
   recall() {
-    this.isBusy = true;
     if (!this.trained) this.train();
     const input = this.H.bitsToPM1(this.noisy);
-    this.energyBefore = this.H.energy(input);
-    const outPM1: PM1[] = this.H.recall(input, this.iterations);
+
+    const trace = this.H.recallWithTrace(input, this.iterations);
+    this.traceEnergies = trace.energies;
+
+    // filas con delta
+    this.traceRows = trace.energies.map((E, k, arr) => ({
+      it: k,
+      E,
+      dE: k === 0 ? 0 : E - arr[k - 1]
+    }));
+
+    // salida final
+    const outPM1 = trace.states[trace.states.length - 1];
     this.output = this.H.pm1ToBits(outPM1);
-    this.energyAfter = this.H.energy(outPM1);
+
+    this.energyBefore = trace.energies[0];
+    this.energyAfter = trace.energies[trace.energies.length - 1];
+
+    // % mejora (si energía inicial ≠ 0)
+    const denom = Math.abs(this.energyBefore || 1e-9);
+    const raw = ((this.energyBefore! - this.energyAfter!) / denom) * 100;
+    this.improvementPct = Math.max(0, Math.min(100, raw));
+
     this.recallDone = true;
-    this.lastAction = 'Reconocimiento ejecutado';
-    const lowered = this.energyAfter! < this.energyBefore!;
-    this.showNotice(
-      lowered ? 'Reconocimiento OK: la energía disminuyó' : 'Atención: la energía no disminuyó',
-      lowered ? 'success' : 'danger',
-      2500
-    );
-    setTimeout(() => this.isBusy = false, 1000);
+    this.showNotice('Reconocimiento ejecutado', 'success', 1000);
   }
 
   //Metodo para resetear la vista
