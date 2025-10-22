@@ -1,0 +1,105 @@
+<div class="container mt-4">
+
+    <h3 class="text-center mb-3">Prototipo Hopfield 10×10 – Identificación del aro "C"</h3>
+
+    <!-- Badges de estado -->
+    <div class="d-flex flex-wrap gap-2 justify-content-center mb-3">
+        <span class="badge rounded-pill text-bg-{{ wasTrained ? 'success':'secondary' }}">
+            {{ wasTrained ? 'Entrenado ✔' : 'Sin entrenar' }}
+        </span>
+        <span class="badge rounded-pill text-bg-{{ noiseApplied ? 'warning' : 'secondary' }}">
+            {{ noiseApplied ? ('Ruido: ' + (noise*100 | number:'1.0-0') + '%') : 'Sin ruido' }}
+        </span>
+        <span class="badge rounded-pill text-bg-{{ recallDone ? 'primary' : 'secondary' }}">
+            {{ recallDone ? 'Reconocido' : 'Sin reconocimiento' }}
+        </span>
+        <span class="badge rounded-pill text-bg-light border">
+            Última acción: <b>{{ lastAction || '—' }}</b>
+        </span>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white">Controles</div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <label class="form-label">Ruido: {{ noise | number:'1.0-2' }}</label>
+                        <input type="range" class="form-range" min="0" max="0.5" step="0.01" [(ngModel)]="noise">
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label">Iteraciones</label>
+                        <input type="number" class="form-control" [(ngModel)]="iterations" min="1" max="30">
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2">
+                        <button class="btn btn-primary" (click)="train()" [disabled]="isBusy">
+                            Entrenar
+                        </button>
+                        <button class="btn btn-warning" (click)="addNoise()" [disabled]="isBusy">
+                            Agregar ruido
+                        </button>
+                        <button class="btn btn-success d-flex align-items-center gap-2" (click)="recall()"
+                            [disabled]="isBusy">
+                            <span *ngIf="isBusy" class="spinner-border spinner-border-sm" role="status"
+                                aria-hidden="true"></span>
+                            Reconocer
+                        </button>
+                        <button class="btn btn-secondary" (click)="reset()" [disabled]="isBusy">
+                            Limpiar
+                        </button>
+                    </div>
+
+                    <hr>
+                    <p *ngIf="energyBefore !== undefined">Energía inicial: <b>{{energyBefore | number:'1.0-2'}}</b></p>
+                    <p *ngIf="energyAfter !== undefined">Energía final: <b>{{energyAfter | number:'1.0-2'}}</b></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="row g-3">
+                <div class="col-md-4 text-center">
+                    <h6>Patrón (aro "C")</h6>
+                    <div class="grid">
+                        <div *ngFor="let i of range(100)" class="cell" [class.on]="onCell(pattern,i)">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-center">
+                    <h6>Entrada ruidosa</h6>
+                    <div class="grid pulse" *ngIf="noiseApplied; else noisyGrid">
+                        <div *ngFor="let i of range(100)" class="cell" [class.on]="onCell(noisy,i)">
+                        </div>
+                    </div>
+                    <ng-template #noisyGrid>
+                        <div class="grid">
+                            <div *ngFor="let i of range(100)" class="cell" [class.on]="onCell(noisy,i)">
+                            </div>
+                        </div>
+                    </ng-template>
+                </div>
+                <div class="col-md-4 text-center">
+                    <h6>Salida (recuperada)</h6>
+                    <div class="grid pulse" *ngIf="recallDone; else outGrid">
+                        <div *ngFor="let i of range(100)" class="cell" [class.on]="onCell(output,i)">
+                        </div>
+                    </div>
+                    <ng-template #outGrid>
+                        <div class="grid">
+                            <div *ngFor="let i of range(100)" class="cell" [class.on]="onCell(output,i)">
+                            </div>
+                        </div>
+                    </ng-template>
+                </div>
+            </div>
+        </div>
+
+        <!-- Aviso (alert) -->
+        <div *ngIf="notice" class="alert alert-{{ notice.type }} alert-dismissible fade show" role="alert">
+            {{ notice.text }}
+        </div>
+
+    </div>
+</div>
