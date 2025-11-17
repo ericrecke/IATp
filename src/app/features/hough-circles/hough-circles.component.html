@@ -1,0 +1,154 @@
+<div class="hough-shell mt-4">
+  <h3 class="text-center mb-1">Prototipo Hough 10x10 - Deteccion de circunferencias</h3>
+  <p class="text-center text-muted mb-3">
+    Ajusta el lienzo binario y ejecuta la transformada para estimar centros de circulos de radio fijo.
+  </p>
+
+  <div class="status-badges mb-4">
+    <span class="badge rounded-pill text-bg-{{ activePixels ? 'primary' : 'secondary' }}">
+      Pixeles activos: {{ activePixels }}/{{ gridSize * gridSize }}
+    </span>
+    <span class="badge rounded-pill text-bg-dark">
+      Radio actual: {{ radius }}
+    </span>
+    <span class="badge rounded-pill text-bg-{{ result ? 'info' : 'secondary' }}">
+      Estado: {{ result ? 'Analizado' : 'Pendiente' }}
+    </span>
+    <span class="badge rounded-pill text-bg-light border text-muted" *ngIf="result">
+      Centro: ({{ result.maxX }}, {{ result.maxY }}) con {{ result.maxValue }} votos
+    </span>
+  </div>
+
+  <div class="hough-grid">
+    <article class="card shadow-sm control-card">
+      <div class="card-header bg-dark text-white">Lienzo binario (10x10)</div>
+      <div class="card-body d-flex flex-column gap-3">
+        <div class="grid-wrapper text-center">
+          <div class="drawing-grid mx-auto" role="grid" aria-label="Lienzo 10x10">
+            <ng-container *ngFor="let y of range(gridSize)">
+              <ng-container *ngFor="let x of range(gridSize)">
+                <button type="button"
+                  class="pixel"
+                  [class.on]="image[y][x] === 1"
+                  [attr.aria-pressed]="image[y][x] === 1"
+                  (click)="toggle(x, y)"
+                  [attr.aria-label]="'Pixel (' + x + ',' + y + ')'">
+                </button>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+        <div class="small text-muted text-center">
+          <span class="me-2">Activos: <b>{{ activePixels }}</b></span>
+          <span *ngIf="result">Max votos: <b>{{ result.maxValue }}</b></span>
+        </div>
+
+        <div class="action-buttons">
+          <button class="btn btn-primary w-100" (click)="runHough()" [disabled]="activePixels === 0">
+            Detectar circulos
+          </button>
+          <button class="btn btn-outline-danger w-100" type="button" (click)="clearImage()">
+            Limpiar lienzo
+          </button>
+          <button class="btn btn-outline-secondary w-100" type="button" (click)="restoreDefaultPreset()">
+            Restablecer patron
+          </button>
+        </div>
+
+        <div class="radius-panel">
+          <div class="text-uppercase small fw-semibold text-muted">Radio fijo (pixeles)</div>
+          <div class="radius-group mt-2">
+            <button type="button"
+              *ngFor="let r of radiusOptions"
+              class="btn btn-sm"
+              [ngClass]="r === radius ? 'btn-success' : 'btn-outline-secondary'"
+              (click)="setRadius(r)">
+              {{ r }}
+            </button>
+          </div>
+        </div>
+
+        <div class="preset-panel">
+          <div class="text-uppercase small fw-semibold text-muted">Presets rapidos</div>
+          <div class="preset-group mt-2">
+            <button type="button"
+              *ngFor="let preset of presets"
+              class="btn btn-sm"
+              [ngClass]="preset.id === selectedPreset ? 'btn-primary' : 'btn-outline-secondary'"
+              (click)="applyPreset(preset.id)">
+              {{ preset.label }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="card shadow-sm accum-card">
+      <div class="card-header bg-light">
+        <strong>Acumulador Hough (centros candidatos)</strong>
+      </div>
+      <div class="card-body text-center">
+        <ng-container *ngIf="result; else emptyAccumulator">
+          <div class="accum-wrapper">
+            <span class="axis axis-rho">y</span>
+            <div class="accum-panel">
+              <div class="accum-scroll">
+                <div class="accum-grid"
+                  [style.gridTemplateColumns]="'repeat(' + result.accumulator[0].length + ', 12px)'">
+                  <ng-container *ngFor="let yi of range(result.accumulator.length)">
+                    <ng-container *ngFor="let xi of range(result.accumulator[0].length)">
+                      <div class="acc-cell"
+                        [class.max]="xi === result.maxX && yi === result.maxY"
+                        [style.opacity]="result.maxValue ? result.accumulator[yi][xi] / result.maxValue : 0">
+                      </div>
+                    </ng-container>
+                  </ng-container>
+                </div>
+              </div>
+              <span class="axis axis-theta">x</span>
+            </div>
+          </div>
+          <p class="mt-3 mb-0 text-muted">
+            Centro principal -> ({{ result.maxX }}, {{ result.maxY }}) con {{ result.maxValue }} votos
+          </p>
+        </ng-container>
+        <ng-template #emptyAccumulator>
+          <p class="text-muted mb-0">Ejecuta la transformada para poblar el acumulador.</p>
+        </ng-template>
+      </div>
+    </article>
+
+    <article class="card shadow-sm peaks-card">
+      <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+        <strong>Centros detectados</strong>
+        <span *ngIf="topCenters.length" class="badge bg-light text-success">Top {{ topCenters.length }}</span>
+      </div>
+      <div class="card-body">
+        <ng-container *ngIf="topCenters.length; else emptyPeaks">
+          <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>#</th>
+                  <th>Centro (x,y)</th>
+                  <th>Votos</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let center of topCenters; index as idx">
+                  <td><span class="badge text-bg-dark">#{{ idx + 1 }}</span></td>
+                  <td>({{ center.x }}, {{ center.y }})</td>
+                  <td>{{ center.votes }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </ng-container>
+        <ng-template #emptyPeaks>
+          <p class="text-muted mb-0 text-center">Sin centros aun.</p>
+        </ng-template>
+      </div>
+    </article>
+  </div>
+</div>

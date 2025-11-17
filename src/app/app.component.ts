@@ -21,7 +21,7 @@ export class AppComponent {
   }
 
   private setLayoutFromUrl(url: string): void {
-    const fullWidthRoutes = ['/exhaustive', '/heuristic'];
+    const fullWidthRoutes = ['/exhaustive', '/heuristic', '/hough-lines', '/hough-circles'];
     this.isFullWidthPage = fullWidthRoutes.some(route => url.startsWith(route));
   }
 }
